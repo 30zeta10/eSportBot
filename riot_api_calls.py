@@ -2,12 +2,8 @@
 
 import os
 import requests
-
-from dotenv import DotEnv
-
 # load riot api token from .env file
 
-dotenv = DotEnv()
 token = os.getenv('RIOT_TOKEN')
 
 

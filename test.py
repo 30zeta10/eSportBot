@@ -1,10 +1,12 @@
-import requests
+from riotAPI import *
+
+print(game_info("666SQ"))
 
 '''
 
 this file is used for testing random functions or ideas on how to solve a problem
 
-'''
+
 
 #r = requests.get('https://euw1.api.riotgames.com/lol/spectator/v4/active-games/by-summoner/rmcod4UKAJu8yVRdNWtY1szqhT7Aos2ODAuoJxgBxOl4zcw?api_key=RGAPI-cffbbe00-8c7e-4d1f-9f26-6af80c340721')
 
@@ -23,3 +25,4 @@ def printt():
 
 
 printt()
+'''
