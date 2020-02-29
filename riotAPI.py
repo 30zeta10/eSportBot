@@ -11,27 +11,37 @@ __CHAMPION_VERSION = '10.4.1'
 
 # Game-Spectater Function
 def game_info(summoner_name):
-    blue_team = dict
-    red_team = dict
-
+    teams = {}
+    blue_team = []
+    red_team = []
     try:
-        match = __v4_active_games(__v4_summoners(summoner_name).json()['id'])
+        match = __v4_active_games(summoner_name)
         # check if we are able to spectate a game by player name
-        # TODO Fall abdecken mit success != 1
-        if match.status_code != 200:
+        if match['success'] != 1 or match['status_code'] != 200:
             output = {
                 'success': 0,
-                'status_code': match.status_code,
-                'message': 'Bot cant spectate ' + summoner_name
+                'status_code': match['status_code'],
+                'message': 'Bot cant spectate ' + summoner_name + '.'
             }
             return output
 
-        # order players by red and blue team
-        # for i in match.json()['participants']:
-        #    player = {'summoner': i['summonerName']
-        #              }
+        for summoner in match['data']['participants']:
+            player = {}
+            # TODO die get_solo_q Rückgabewert ist bullshit
+            if summoner['teamId'] == 100:
+                player['summonerName'] = summoner['summonerName']
+                player['rank'] = __get_solo_q_rank(summoner['summonerId'])
+                # TODO champion name
+                blue_team.append(player)
+            else:
+                player['summonerName'] = summoner['summonerName']
+                player['rank'] = __get_solo_q_rank(summoner['summonerId'])
+                # TODO champion name
+                red_team.append(player)
+        teams['blue'] = blue_team
+        teams['red'] = red_team
+        return teams
 
-        #   print(i)
     except Exception as err:
         error_out = {
             'success': -1,
@@ -43,26 +53,21 @@ def game_info(summoner_name):
 
 # --- Private functions ----
 
-# Get information about one summoner including the encrpted playerid
-# TODO man kann beide hilfsfunktionen v4 zusammenfassen und nur über ein output machen
-def __v4_summoners(summoner_name):
-    try:
-        data = requests.get(
-            'https://euw1.api.riotgames.com/lol/summoner/v4/summoners/by-name/' + summoner_name + '?api_key=' + __TOKEN)
-    except Exception as err:
-        error_out = {
-            'success': -1,
-            'func': 'v4summoners',
-            'error': err
-        }
-        return error_out
-
-
 # spectate for an active game
-def __v4_active_games(summoner_id):
+def __v4_active_games(summoner_name):
     try:
-        return requests.get(
+        summoner_id = requests.get(
+            'https://euw1.api.riotgames.com/lol/summoner/v4/summoners/by-name/' + summoner_name + '?api_key=' + __TOKEN).json()[
+            'id']
+        data = requests.get(
             'https://euw1.api.riotgames.com/lol/spectator/v4/active-games/by-summoner/' + summoner_id + '?api_key=' + __TOKEN)
+        output = {
+            'success': 1,
+            'status_code': data.status_code,
+            'data': data.json()
+        }
+        return output
+
     except Exception as err:
         error_out = {
             'success': -1,
@@ -101,3 +106,23 @@ def __get_champion_list(champion_id, version):
         return error_out
 
 
+# get solo rank list from api for one summoner
+def __get_solo_q_rank(summoner_id):
+    try:
+        solo_rank_list = requests.get(
+            'https://euw1.api.riotgames.com/lol/league/v4/entries/by-summoner/' + summoner_id + '?api_key=' + __TOKEN)
+
+        output = {
+            'success': 1,
+            'status_code': solo_rank_list.json()['status_code'],
+            'data': solo_rank_list.json()['data']
+        }
+        return output
+
+    except Exception as err:
+        error_out = {
+            'success': -1,
+            'func': 'getsoloqrank',
+            'error': err
+        }
+        return error_out

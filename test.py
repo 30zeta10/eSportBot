@@ -1,6 +1,5 @@
 from riotAPI import *
-
-print(game_info("666SQ"))
+print(game_info("Skain1"))
 
 '''
 
