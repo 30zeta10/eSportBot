@@ -1,6 +1,6 @@
 from riotAPI import *
-print(game_info("Skain1"))
 
+print(game_info("1eins11"))
 '''
 
 this file is used for testing random functions or ideas on how to solve a problem

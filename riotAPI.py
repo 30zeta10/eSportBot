@@ -1,14 +1,13 @@
 import os
+import json
 import requests
 
 # --- Constants ---
-
 __TOKEN = os.environ['RIOT_TOKEN']
 __CHAMPION_VERSION = '10.4.1'
 
+
 # --- Functions ---
-
-
 # Game-Spectater Function
 def game_info(summoner_name):
     teams = {}
@@ -16,7 +15,7 @@ def game_info(summoner_name):
     red_team = []
     try:
         match = __v4_active_games(summoner_name)
-        # check if we are able to spectate a game by player name
+        # check if we are able to spectate a game by player name and got the data due to success
         if match['success'] != 1 or match['status_code'] != 200:
             output = {
                 'success': 0,
@@ -25,18 +24,21 @@ def game_info(summoner_name):
             }
             return output
 
+        # split up the team into blue and red team
         for summoner in match['data']['participants']:
             player = {}
             # TODO die get_solo_q Rückgabewert ist bullshit
             if summoner['teamId'] == 100:
                 player['summonerName'] = summoner['summonerName']
-                player['rank'] = __get_solo_q_rank(summoner['summonerId'])
-                # TODO champion name
+                player['champion'] = __get_champion(summoner['championId'])
+                player['profileIconId'] = summoner['profileIconId']
+                # player['rank'] = __get_solo_q_rank(summoner['summonerId'])
                 blue_team.append(player)
             else:
                 player['summonerName'] = summoner['summonerName']
-                player['rank'] = __get_solo_q_rank(summoner['summonerId'])
-                # TODO champion name
+                player['champion'] = __get_champion(summoner['championId'])
+                player['profileIconId'] = summoner['profileIconId']
+                # player['rank'] = __get_solo_q_rank(summoner['summonerId'])
                 red_team.append(player)
         teams['blue'] = blue_team
         teams['red'] = red_team
@@ -53,7 +55,7 @@ def game_info(summoner_name):
 
 # --- Private functions ----
 
-# spectate for an active game
+# spectate for an active game if success ist one
 def __v4_active_games(summoner_name):
     try:
         summoner_id = requests.get(
@@ -79,34 +81,23 @@ def __v4_active_games(summoner_name):
 
 # assign id to champion
 # current Version 10.4.1
-def __get_champion_list(champion_id, version):
+def __get_champion(champion_id):
     try:
-        champion_list = requests.get(
-            'http://ddragon.leagueoflegends.com/cdn/' + version + '/data/en_US/champion.json').json()
-        for i in list(champion_list.json()['data']):
-            if champion_list.json()['data'][i]['key'] == champion_id:
-                output = {
-                    'success': 1,
-                    'data': i
-                }
-                return output
+        # returns the champion that matched with the champion_id
+        with open('data/champions.json', encoding="utf8") as json_file:
+            data = json.load(json_file)
+            for value in data['data'].items():
+                if int(value[1]['key']) == int(champion_id):
+                    return value[0]
+        return None
 
-        output = {
-            'success': 0,
-            'data': {}
-        }
-        return output
-
-    except Exception as err:
-        error_out = {
-            'success': -1,
-            'func': 'getchampionslist',
-            'error': err
-        }
-        return error_out
+    # Catch exception for io operations
+    except IOError:
+        return "Can't open json file: IOError"
 
 
 # get solo rank list from api for one summoner
+"""
 def __get_solo_q_rank(summoner_id):
     try:
         solo_rank_list = requests.get(
@@ -126,3 +117,4 @@ def __get_solo_q_rank(summoner_id):
             'error': err
         }
         return error_out
+"""
