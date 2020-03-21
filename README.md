@@ -1,16 +1,18 @@
 # eSportBot
 
-Discord Bot for League and eSport-related content
+Discord Bot for League and eSport-related content.
 
-Current features:
+# Usage
 
-# /gameinfo <summoner-name>
-
-shows the participants of the match for a given summoner.
-Information include:
-
-- team sides
-- picked champions
+ ##### _1. Game spectator:_
+ 
+ ##### _Description:_
+Shows the participants of the match for a given summoner.
+Information includes:
+- Team sides
+- Picked champions
 - Elo
-- Win-Lose Ratio
+- Win-Lose ratio
+##### _Command:_
+`/gameinfo <summoner-name>`
 
