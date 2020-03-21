@@ -2,6 +2,7 @@
   <dictionary name="kunde">
     <words>
       <w>gameinfo</w>
+      <w>spectater</w>
     </words>
   </dictionary>
 </component>
