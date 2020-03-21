@@ -1,3 +1,4 @@
+import logging
 import os
 import json
 import requests
@@ -27,18 +28,22 @@ def game_info(summoner_name):
         # split up the team into blue and red team
         for summoner in match['data']['participants']:
             player = {}
-            # TODO die get_solo_q Rückgabewert ist bullshit
+            rank_info = get_solo_q_rank(summoner['summonerId'])
             if summoner['teamId'] == 100:
                 player['summonerName'] = summoner['summonerName']
                 player['champion'] = __get_champion(summoner['championId'])
                 player['profileIconId'] = summoner['profileIconId']
-                # player['rank'] = __get_solo_q_rank(summoner['summonerId'])
+                player['wins'] = rank_info[0]
+                player['losses'] = rank_info[1]
+                player['rank'] = rank_info[2] + " " + rank_info[3]
                 blue_team.append(player)
             else:
                 player['summonerName'] = summoner['summonerName']
                 player['champion'] = __get_champion(summoner['championId'])
                 player['profileIconId'] = summoner['profileIconId']
-                # player['rank'] = __get_solo_q_rank(summoner['summonerId'])
+                player['wins'] = rank_info[0]
+                player['losses'] = rank_info[1]
+                player['rank'] = rank_info[2] + " " + rank_info[3]
                 red_team.append(player)
         teams['blue'] = blue_team
         teams['red'] = red_team
@@ -92,29 +97,19 @@ def __get_champion(champion_id):
         return None
 
     # Catch exception for io operations
-    except IOError:
+    except Exception as err:
+        logging.exception(err)
         return "Can't open json file: IOError"
 
 
 # get solo rank list from api for one summoner
-"""
-def __get_solo_q_rank(summoner_id):
+def get_solo_q_rank(summoner_id):
     try:
         solo_rank_list = requests.get(
             'https://euw1.api.riotgames.com/lol/league/v4/entries/by-summoner/' + summoner_id + '?api_key=' + __TOKEN)
+        data = solo_rank_list.json()[0]
 
-        output = {
-            'success': 1,
-            'status_code': solo_rank_list.json()['status_code'],
-            'data': solo_rank_list.json()['data']
-        }
-        return output
-
+        return data['wins'], data['losses'], data['tier'], data['rank']
     except Exception as err:
-        error_out = {
-            'success': -1,
-            'func': 'getsoloqrank',
-            'error': err
-        }
-        return error_out
-"""
+        logging.exception(err)
+        return None
